@@ -12,7 +12,9 @@ model_path = './detecting_files/no_bn.caffemodel'
 
 detector = Detector(deploy_path, model_path, jason_file_path)
 grade_sys = GradeSYS(jason_file_path)
+
 imgStream = glob.glob("./img_catching/*.png")  # 获取img路径下的所有 jpg 图片
+
 for img in imgStream:
     img = cv2.imread(img)
     img = detector.check_img(img)
