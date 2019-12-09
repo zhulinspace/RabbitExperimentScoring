@@ -56,7 +56,10 @@ class CheckCatching(GiveMark):
         rabbit_pos = checkedObjects[0][2]
         rabbit_center_x = (rabbit_pos[0] + rabbit_pos[2]) / 2
         rabbit_center_y = (rabbit_pos[1] + rabbit_pos[3]) / 2
-        if stage == 0 and 640 < rabbit_center_x < 1280 and 360 < rabbit_center_y < 720:
+        if stage == 0 and \
+                640 < rabbit_center_x < 1280 and \
+                360 < rabbit_center_y < 720 and \
+                checkedObjects[0][0] > self.minTimes:
             print('有效的抓拿判断帧...')
             if checkedObjects[3][0] == 1 and checkedObjects[4][0] == 1:
                 hand_pos = checkedObjects[3][2]
@@ -67,6 +70,7 @@ class CheckCatching(GiveMark):
                 else:
                     self.transcript['抓拿判定'] = 0
                 print('抓拿判定结束')
+        return True
 
     def judge_catching(self, hand_pos, ear_pos):
         if ear_pos[2] < hand_pos[0]:
@@ -95,6 +99,7 @@ class CheckNeedle(GiveMark):
     """
     TODO
     """
+
     def give_mark(self, checkedObjects):
         print("针头检测开始...")
         print("针头检测结束")
@@ -105,6 +110,7 @@ class CheckNerve(GiveMark):
     """
     TODO
     """
+
     def give_mark(self, checkedObjects):
         print("神经检测开始...")
         print("神经检测结束")
