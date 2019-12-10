@@ -26,9 +26,14 @@ class GradeSYS:
             if stage_func.give_mark(checkedObjects):
                 # 如果返回值为 True 则表示该项测试已结束 将其移出评分序列
                 self.commandLine.remove(stage_func)
+            else:
+                break
 
     def print_transcript(self):
         print('now your transcript is: ', self.transcript)
+
+    def get_transcript(self):
+        return self.transcript
 
 
 # 所有评分函数的接口
@@ -49,9 +54,11 @@ class GiveMark:
         print("You got 99 points!")
 
 
+
 # =====================所有的评分方法在此添加============================================
 class CheckCatching(GiveMark):
     def give_mark(self, checkedObjects):
+        print('now catching')
         stage = checkedObjects[6][0]
         rabbit_pos = checkedObjects[0][2]
         rabbit_center_x = (rabbit_pos[0] + rabbit_pos[2]) / 2
@@ -66,11 +73,12 @@ class CheckCatching(GiveMark):
                 ear_pos = checkedObjects[4][2]
                 judge = self.judge_catching(hand_pos, ear_pos)
                 if judge:
-                    self.transcript['抓拿判定'] = 10
+                    self.transcript['Catch'] = 10
                 else:
-                    self.transcript['抓拿判定'] = 0
+                    self.transcript['Catch'] = 0
                 print('抓拿判定结束')
-        return True
+                return True
+
 
     def judge_catching(self, hand_pos, ear_pos):
         if ear_pos[2] < hand_pos[0]:
