@@ -67,14 +67,15 @@ class Detector:
         self.reset_obj()
 
         # 1.Check Stage
-        self._checkedObjects[6][0] = self._stage_estimating.estimate(img)[0]
+        # self._checkedObjects[6][0] = self._stage_estimating.estimate(img)[0]
+        self._checkedObjects[6][0] = 0
 
         # 2. Find and rectangle object
         img_w, img_h, *_ = img.shape
         self.set_net_input(img)
         self._clock.tic()
         cv_out = self._net.forward()
-        print('time cost: ', self._clock.toc())
+        # print('time cost: ', self._clock.toc())
 
         for detection in cv_out[0, 0, :, :]:
             """
