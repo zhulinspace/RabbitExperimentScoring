@@ -5,12 +5,14 @@ import time
 from utils.GiveMark import GradeSYS
 from utils.Detector import Detector
 
-video_path = './video/RabbitVideo_cut_2.mp4'
-# video_path = './video/RabbitVideo.mp4'
+video_path = './video/RabbitVideo.mp4'
 
 jason_file_path = './ScoresLine.json'
 deploy_path = './detecting_files/no_bn.prototxt'
 model_path = './detecting_files/no_bn.caffemodel'
+
+last_stage = ''
+num_of_stage = 3
 
 detector = Detector(deploy_path, model_path, jason_file_path)
 grade_sys = GradeSYS(jason_file_path)
@@ -38,6 +40,11 @@ while video_cap.isOpened():
 
     cv2.imshow('Rabbit Experiments & Now scoring:', img)
     cv2.waitKey(25)
+
+transript = grade_sys.get_transcript()
+if len(transript) < num_of_stage:
+    grade_sys.set_transcript(num_of_stage, 0)
+
 print('Now experiment ends.')
 print('Your final scoring is: ')
 grade_sys.print_transcript()

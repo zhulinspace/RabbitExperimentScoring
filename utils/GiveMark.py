@@ -39,12 +39,10 @@ class GradeSYS:
 
     def get_transcript(self):
         return self.transcript
-    # @property
-    # def transcript(self):
-    #     return self.transcript
-    # @transcript.setter
-    # def transcript(self, name, score):
-    #     self.transcript[name] = score
+
+    def set_transcript(self, name, score):
+        self.transcript[name] = score
+
 
 
 # 所有评分函数的接口

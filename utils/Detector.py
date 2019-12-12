@@ -8,7 +8,9 @@ from utils.time_clock import clock
 
 
 class Detector:
-    # 运行的检测类，用于检测当前图片上的物品，并维护一个 List checkedObject
+    """
+    运行的检测类，用于检测当前图片上的物品，并维护一个 List checkedObject
+    """
 
     def __init__(self,deploy_path, model_path, jason_file_path):
         self._deploy_path = deploy_path
@@ -16,8 +18,15 @@ class Detector:
         self._jason_file_path = jason_file_path
         self._size = 300
         self._classNum = 6  # 目前能够识别的物品数量
-        # 列表的值 第一项为 Object 到目前为止出现的次数(为了减小错误识别造成的影响，暂定出现40次时确定该物品已被检测到) , 第二项为一个标识 Object 当前位置的元组
-        self._checkedObjects = [[0, 0, []] for i in range(self._classNum)]  # 当前帧是否有目标，目标出现次数，目标坐标
+        """
+        列表的值:
+        一项为 Object 到目前为止出现的次数(为了减小错误识别造成的影响，暂定出现40次时确定该物品已被检测到) , 第二项为一个标识 Object 当前位置的元组
+        [0]当前帧是否有目标
+        [1]目标出现次数
+        [2]目标坐标
+        """
+        self._checkedObjects = [[0, 0, []] for i in range(self._classNum)]
+
         self._checkedObjects.append([-1])
         self._net = cv2.dnn.readNetFromCaffe(self._deploy_path, self._model_path)
         self._stage_estimating = StageEstimate(self._jason_file_path)
