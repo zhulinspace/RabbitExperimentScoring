@@ -21,14 +21,30 @@ class GradeSYS:
             self.commandLine.append(stage_func)  # 将评分对象加入执行链
 
     def begin_mark_line(self, checkedObjects):
+        if len(self.commandLine) < 1:
+            return False
         # 给入当前的目标检测情况 开始一个轮次的评分
         for stage_func in self.commandLine:
             if stage_func.give_mark(checkedObjects):
                 # 如果返回值为 True 则表示该项测试已结束 将其移出评分序列
                 self.commandLine.remove(stage_func)
+            else:
+                break
+
+    def get_now_stage(self):
+        return "{}".format(self.commandLine[0])
 
     def print_transcript(self):
         print('now your transcript is: ', self.transcript)
+
+    def get_transcript(self):
+        return self.transcript
+    # @property
+    # def transcript(self):
+    #     return self.transcript
+    # @transcript.setter
+    # def transcript(self, name, score):
+    #     self.transcript[name] = score
 
 
 # 所有评分函数的接口
@@ -49,65 +65,99 @@ class GiveMark:
         print("You got 99 points!")
 
 
+
 # =====================所有的评分方法在此添加============================================
 class CheckCatching(GiveMark):
     def give_mark(self, checkedObjects):
+        # 针头出现 阶段判0
+        if checkedObjects[6][0] == 1:
+            self.transcript['Catch'] = 0
+            return True
+        # print('now catching')
         stage = checkedObjects[6][0]
         rabbit_pos = checkedObjects[0][2]
         rabbit_center_x = (rabbit_pos[0] + rabbit_pos[2]) / 2
         rabbit_center_y = (rabbit_pos[1] + rabbit_pos[3]) / 2
-        if stage == 0 and 640 < rabbit_center_x < 1280 and 360 < rabbit_center_y < 720:
-            print('有效的抓拿判断帧...')
+        # if stage == 0 and \
+        #         640 < rabbit_center_x < 1280 and \
+        #         360 < rabbit_center_y < 720 :
+        #         checkedObjects[0][0] > self.minTimes:
+        if 640 < rabbit_center_x < 1280 and 360 < rabbit_center_y < 720 :
+            # print('有效的抓拿判断帧...')
             if checkedObjects[3][0] == 1 and checkedObjects[4][0] == 1:
                 hand_pos = checkedObjects[3][2]
                 ear_pos = checkedObjects[4][2]
                 judge = self.judge_catching(hand_pos, ear_pos)
                 if judge:
-                    self.transcript['抓拿判定'] = 10
+                    self.transcript['Catch'] = 10
                 else:
-                    self.transcript['抓拿判定'] = 0
-                print('抓拿判定结束')
+                    self.transcript['Catch'] = 0
+                # print('抓拿判定结束')
+                return True
+
 
     def judge_catching(self, hand_pos, ear_pos):
         if ear_pos[2] < hand_pos[0]:
-            print('错误！抓屁股')
+            # print('错误！抓屁股')
             return False
         elif ear_pos[0] > hand_pos[0] - 30 and ear_pos[2] < hand_pos[2] + 30:
-            print('错误！抓耳朵')
+            # print('错误！抓耳朵')
             return False
         else:
             return True
-
-
-class CheckWound(GiveMark):
-    # 检查伤口是否存在
-    def give_mark(self, checkedObjects):
-        print("伤口检测开始...")
-        if checkedObjects[2][0] > self.minTimes:
-            self.transcript['伤口检测'] = 10
-            print("检测到伤口")
-            return True
-        print("伤口检测结束")
-        return False
-
 
 class CheckNeedle(GiveMark):
     """
     TODO
     """
+
     def give_mark(self, checkedObjects):
-        print("针头检测开始...")
-        print("针头检测结束")
+        if checkedObjects[2][0] == 1:
+            self.transcript['Needle'] = 0
+            return True
+        # print("针头检测开始...")
+        needle_appearance = checkedObjects[5][1]
+        if needle_appearance > self.minTimes:
+            self.transcript['Needle'] = 10
+            return True
+        # print("针头检测结束")
         return False
 
+class CheckFixed(GiveMark):
+    # 检查是否固定
+    def give_mark(self, checkedObjects):
+        # print("固定检测开始...")
+        if checkedObjects[2][1] > self.minTimes:
+            self.transcript['fixed'] = 10
+            # print("固定成功")
+            return True
+        # print("固定检测结束")
+        return False
+
+class CheckWound(GiveMark):
+    # 检查伤口是否存在
+    def give_mark(self, checkedObjects):
+        # print("伤口检测开始...")
+        if checkedObjects[2][1] > self.minTimes:
+            self.transcript['Wound'] = 10
+            # print("检测到伤口")
+            return True
+        # print("伤口检测结束")
+        return False
 
 class CheckNerve(GiveMark):
     """
     TODO
     """
+    times = 0
+
     def give_mark(self, checkedObjects):
-        print("神经检测开始...")
-        print("神经检测结束")
+        self.times += 1
+        # print("神经检测开始...")
+        if self.times >= 20:
+            self.transcript['Nerve'] = 10
+            return True
+        # print("神经检测结束")
         return False
 
 
