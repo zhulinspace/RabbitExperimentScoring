@@ -1,14 +1,15 @@
 import cv2
 import glob
-import numpy
+import numpy as np
 
 from utils.GiveMark import GradeSYS
-from utils.StageEstimate import StageEstimate
 from utils.time_clock import clock
 
 
 class Detector:
-    # 运行的检测类，用于检测当前图片上的物品，并维护一个 List checkedObject
+    """
+    运行的检测类，用于检测当前图片上的物品，并维护一个 List checkedObject
+    """
 
     def __init__(self,deploy_path, model_path, jason_file_path):
         self._deploy_path = deploy_path
@@ -16,12 +17,17 @@ class Detector:
         self._jason_file_path = jason_file_path
         self._size = 300
         self._classNum = 6  # 目前能够识别的物品数量
-        # 列表的值 第一项为 Object 到目前为止出现的次数(为了减小错误识别造成的影响，暂定出现40次时确定该物品已被检测到) , 第二项为一个标识 Object 当前位置的元组
-        self._checkedObjects = [[0, 0, []] for i in range(self._classNum)]  # 当前帧是否有目标，目标出现次数，目标坐标
-        self._checkedObjects.append([-1])
+        """
+        列表的值:
+        一项为 Object 到目前为止出现的次数(为了减小错误识别造成的影响，暂定出现40次时确定该物品已被检测到) , 第二项为一个标识 Object 当前位置的元组
+        [0]当前帧是否有目标
+        [1]目标出现次数
+        [2]目标坐标
+        """
+        res = np.empty(shape=[0, 4], dtype=int)
+        self.checkedObjects = [[0, 0, res] for i in range(self._classNum)]  # 当前帧是否有目标，目标出现次数，目标坐标；二维列表每一个元素代表一个对象
+
         self._net = cv2.dnn.readNetFromCaffe(self._deploy_path, self._model_path)
-        self._stage_estimating = StageEstimate(self._jason_file_path)
-        self._stage_estimating.create_graph()
         self._clock = clock()
 
     @property
@@ -63,19 +69,17 @@ class Detector:
                                                  swapRB=False, crop=False))
 
     def check_img(self, img):
-        assert (isinstance(img, numpy.ndarray)), "输入对象不是图片!"
+        assert (isinstance(img, np.ndarray)), "输入对象不是图片!"
         self.reset_obj()
 
-        # 1.Check Stage
-        # self._checkedObjects[6][0] = self._stage_estimating.estimate(img)[0]
-        self._checkedObjects[6][0] = 0
-
-        # 2. Find and rectangle object
+        # 1. Find and rectangle object
         img_w, img_h, *_ = img.shape
         self.set_net_input(img)
-        self._clock.tic()
         cv_out = self._net.forward()
-        # print('time cost: ', self._clock.toc())
+
+        # 清零每一帧的bounding box
+        for i in range(self._classNum):
+            self.checkedObjects[i][2] = np.empty(shape=[0, 4], dtype=int)
 
         for detection in cv_out[0, 0, :, :]:
             """
@@ -87,9 +91,13 @@ class Detector:
                 top = detection[4] * img_w
                 right = detection[5] * img_h
                 bottom = detection[6] * img_w
+
+                boudingbox = [int(left), int(top), int(right), int(bottom)]
+
                 self._checkedObjects[int(detection[1] - 1)][0] = 1
                 self._checkedObjects[int(detection[1] - 1)][1] += 1
-                self._checkedObjects[int(detection[1] - 1)][2] = [int(left), int(top), int(right), int(bottom)]
+                self._checkedObjects[int(detection[1] - 1)][2] = \
+                    np.append(self.checkedObjects[int(detection[1] - 1)][2], [boudingbox], axis=0)
 
                 cv2.rectangle(img, (int(left), int(top)), (int(right), int(bottom)), (23, 230, 210), thickness=2)
                 text = str(detection[1])

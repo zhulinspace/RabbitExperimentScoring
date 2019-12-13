@@ -39,12 +39,10 @@ class GradeSYS:
 
     def get_transcript(self):
         return self.transcript
-    # @property
-    # def transcript(self):
-    #     return self.transcript
-    # @transcript.setter
-    # def transcript(self, name, score):
-    #     self.transcript[name] = score
+
+    def set_transcript(self, name, score):
+        self.transcript[name] = score
+
 
 
 # 所有评分函数的接口
@@ -70,30 +68,27 @@ class GiveMark:
 class CheckCatching(GiveMark):
     def give_mark(self, checkedObjects):
         # 针头出现 阶段判0
-        if checkedObjects[6][0] == 1:
+        if checkedObjects[5][0] == 1:
             self.transcript['Catch'] = 0
             return True
-        # print('now catching')
-        stage = checkedObjects[6][0]
-        rabbit_pos = checkedObjects[0][2]
-        rabbit_center_x = (rabbit_pos[0] + rabbit_pos[2]) / 2
-        rabbit_center_y = (rabbit_pos[1] + rabbit_pos[3]) / 2
-        # if stage == 0 and \
-        #         640 < rabbit_center_x < 1280 and \
-        #         360 < rabbit_center_y < 720 :
-        #         checkedObjects[0][0] > self.minTimes:
-        if 640 < rabbit_center_x < 1280 and 360 < rabbit_center_y < 720 :
-            # print('有效的抓拿判断帧...')
-            if checkedObjects[3][0] == 1 and checkedObjects[4][0] == 1:
-                hand_pos = checkedObjects[3][2]
-                ear_pos = checkedObjects[4][2]
-                judge = self.judge_catching(hand_pos, ear_pos)
-                if judge:
-                    self.transcript['Catch'] = 10
-                else:
-                    self.transcript['Catch'] = 0
-                # print('抓拿判定结束')
-                return True
+
+        if len(checkedObjects[0][2]) > 0:
+            rabbit_pos = checkedObjects[0][2][0]
+            rabbit_center_x = (rabbit_pos[0] + rabbit_pos[2]) / 2
+            rabbit_center_y = (rabbit_pos[1] + rabbit_pos[3]) / 2
+
+            if 640 < rabbit_center_x < 1280 and 360 < rabbit_center_y < 720 :
+                # print('有效的抓拿判断帧...')
+                if checkedObjects[3][0] == 1 and checkedObjects[4][0] == 1:
+                    hand_pos = checkedObjects[3][2][0]
+                    ear_pos = checkedObjects[4][2][0]
+                    judge = self.judge_catching(hand_pos, ear_pos)
+                    if judge:
+                        self.transcript['Catch'] = 10
+                    else:
+                        self.transcript['Catch'] = 0
+                    # print('抓拿判定结束')
+                    return True
 
 
     def judge_catching(self, hand_pos, ear_pos):
